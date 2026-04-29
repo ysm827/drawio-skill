@@ -5,7 +5,7 @@ license: MIT
 homepage: https://github.com/Agents365-ai/drawio-skill
 compatibility: Requires draw.io desktop app CLI on PATH (macOS/Linux/Windows). Self-check step requires a vision-enabled model (e.g., Claude Sonnet/Opus); gracefully skipped if unavailable.
 platforms: [macos, linux, windows]
-metadata: {"openclaw":{"requires":{"anyBins":["draw.io","drawio"]},"emoji":"📐","os":["darwin","linux","win32"],"install":[{"id":"brew-drawio","kind":"brew","formula":"drawio","bins":["draw.io"],"label":"Install draw.io via Homebrew","os":["darwin"]}]},"hermes":{"tags":["drawio","diagram","flowchart","architecture","visualization","uml"],"category":"design","requires_tools":["draw.io"],"related_skills":["mermaid","excalidraw","plantuml"]},"author":"Agents365-ai","version":"1.4.2"}
+metadata: {"openclaw":{"requires":{"anyBins":["draw.io","drawio"]},"emoji":"📐","os":["darwin","linux","win32"],"install":[{"id":"brew-drawio","kind":"brew","formula":"drawio","bins":["draw.io"],"label":"Install draw.io via Homebrew","os":["darwin"]}]},"hermes":{"tags":["drawio","diagram","flowchart","architecture","visualization","uml"],"category":"design","requires_tools":["draw.io"],"related_skills":["mermaid","excalidraw","plantuml"]},"author":"Agents365-ai","version":"1.4.3"}
 ---
 
 # Draw.io Diagrams
@@ -51,7 +51,7 @@ draw.io --version
 Install draw.io desktop if missing:
 - macOS: `brew install --cask drawio` or download from https://github.com/jgraph/drawio-desktop/releases
 - Windows: download installer from https://github.com/jgraph/drawio-desktop/releases
-- Linux: download `.deb`/`.rpm` from https://github.com/jgraph/drawio-desktop/releases
+- Linux: download `.deb`/`.rpm` from https://github.com/jgraph/drawio-desktop/releases — **do not use snap** (AppArmor sandbox denies secrets/keyring on servers, causes crash)
 
 ## Workflow
 
@@ -446,8 +446,11 @@ draw.io -x -f png -e -s 2 -o diagram.drawio.png input.drawio
 # Windows
 "C:\Program Files\draw.io\draw.io.exe" -x -f png -e -s 2 -o diagram.drawio.png input.drawio
 
-# Linux (headless — requires xvfb-run)
-xvfb-run -a draw.io -x -f png -e -s 2 -o diagram.drawio.png input.drawio
+# Linux (headless — requires xvfb-run; on servers add HOME and --disable-gpu)
+export HOME=${HOME:-/tmp}
+xvfb-run -a --server-args="-screen 0 1280x1024x24" \
+  draw.io -x -f png -e -s 2 -o diagram.drawio.png input.drawio --disable-gpu
+# Running as root (CI / Docker)? Append --no-sandbox AT THE END (placing it earlier makes drawio treat it as the input filename)
 
 # SVG export (final — -e is safe; SVG is text)
 draw.io -x -f svg -e -o diagram.svg input.drawio
@@ -521,6 +524,7 @@ When tools are unavailable, degrade gracefully:
 | draw.io CLI missing, Python missing | Generate `.drawio` XML only; instruct user to open in draw.io desktop or diagrams.net manually |
 | Vision unavailable for self-check | Skip self-check (step 5); proceed directly to showing user the exported PNG |
 | Export fails (Chromium/display issues) | On Linux, retry with `xvfb-run -a`; if still failing, deliver `.drawio` XML and suggest manual export |
+| Export fails on Linux server (headless) | Try in order: (1) `xvfb-run -a`, (2) append `--no-sandbox` at the very end if root, (3) add `--disable-gpu`, (4) `export HOME=/tmp`, (5) install apt deps (`libgtk-3-0 libnotify4 libnss3 libgbm1 libasound2t64` etc.), (6) fall back to [tomkludy/drawio-renderer](https://hub.docker.com/r/tomkludy/drawio-renderer) Docker (REST API for headless export) |
 
 ### Checking if draw.io is in PATH
 
@@ -543,6 +547,9 @@ fi
 | Shapes not connected | `source` and `target` on edge must match existing shape `id` values |
 | Export command not found on macOS | Try full path `/Applications/draw.io.app/Contents/MacOS/draw.io` |
 | Linux: blank/error output headlessly | Prefix command with `xvfb-run -a` |
+| Linux: `--no-sandbox` placed before input file (parsed as filename) | Move `--no-sandbox` to the very end of the command (drawio-desktop#249, #1056) |
+| Linux: `Failed to get 'appData' path` / `Home directory not accessible` | `export HOME=/tmp` before invoking drawio (drawio-desktop#127) |
+| Linux server: segfault / EGL / MESA `failed to load driver` errors | Add `--disable-gpu` (suppresses Chromium GL init when no GPU available) |
 | PDF export fails | Ensure Chromium is available (draw.io bundles it on desktop) |
 | Background color wrong in CLI export | Known CLI bug; add `--transparent` flag or set background via style |
 | Overlapping shapes | Scale spacing with complexity (200–350px); leave routing corridors |
