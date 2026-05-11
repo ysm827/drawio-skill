@@ -2,6 +2,10 @@
 
 [English](README.md) | [Online Docs](https://agents365-ai.github.io/drawio-skill/)
 
+<p align="center">
+  <img src="assets/workflow-cn.png" width="420" alt="工作流程">
+</p>
+
 ## 功能说明
 
 | 能力 | 说明 |
@@ -34,12 +38,6 @@
 | 数据图 | ER 图、数据流图(DFD) | 表容器、PK/FK 标记 |
 | 其他 | 组织架构图、思维导图、线框图 | — |
 
-## 工作流程
-
-<p align="center">
-  <img src="assets/workflow-cn.png" width="420" alt="工作流程">
-</p>
-
 ## 安装
 
 两步 —— 先装 draw.io CLI,再把技能加载到 host:
@@ -53,49 +51,7 @@
 
 ## 样式预设
 
-样式预设让你捕获并复用视觉风格，跨多张图表保持一致。激活预设后，它会替代内置的配色、形状词汇、字体和连线默认值。
-
-### 内置预设
-
-| 名称 | 说明 |
-|------|------|
-| `default` | 干净的蓝/绿/黄配色，与内置规范保持一致 |
-| `corporate` | 低饱和度专业配色，适合商务演示 |
-| `handdrawn` | 手绘描边风格，适合非正式或白板式图表 |
-
-### 将预设应用到图表
-
-```
-画一个微服务架构图，使用我的 "corporate" 样式
-```
-
-或者设置默认样式，让后续所有图表自动使用：
-
-```
-把 "corporate" 设为我的默认样式
-```
-
-### 从文件中学习样式
-
-指向任意 `.drawio` 文件或图片：
-
-```
-从 ~/diagrams/brand.drawio 学习我的样式，保存为 "mybrand"
-从 ~/diagrams/screenshot.png 学习我的样式，保存为 "mybrand"
-```
-
-Skill 会自动提取配色、形状、字体和连线风格，渲染样例图供预览，确认后才保存至 `~/.drawio-skill/styles/mybrand.json`。
-
-### 管理预设
-
-| 你说的话 | 发生什么 |
-|---|---|
-| "列出我的样式" | 以表格展示所有用户和内置预设 |
-| "显示我的 `<name>` 样式" | 格式化输出预设 JSON |
-| "把 `<name>` 设为默认" | 设为所有图表的默认激活预设 |
-| "取消默认" | 清除默认（恢复内置规范） |
-| "删除 `<name>`" | 删除用户预设（会请求确认） |
-| "把 `<a>` 重命名为 `<b>`" | 重命名用户预设 |
+参见 [STYLE_PRESETS_CN.md](STYLE_PRESETS_CN.md) —— 包含内置预设(`default` / `corporate` / `handdrawn`)、"从文件学习样式"流程,以及完整的预设管理命令。
 
 ## 支持作者
 
